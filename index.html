@@ -618,6 +618,45 @@ const CAT_EMOJI = {
   emotions:   '😊',
 };
 
+const CAT_NAMES = {
+  en: {
+    greetings:  'greetings',
+    numbers:    'numbers',
+    colors:     'colors',
+    animals:    'animals',
+    food:       'food',
+    drinks:     'drinks',
+    family:     'family',
+    body:       'body',
+    clothing:   'clothing',
+    nature:     'nature',
+    home:       'home',
+    verbs:      'verbs',
+    adjectives: 'adjectives',
+    time:       'time',
+    emotions:   'emotions',
+  },
+  is: {
+    greetings:  'ການທັກທາຍ',
+    numbers:    'ໂຕເລກ',
+    colors:     'ສີ',
+    animals:    'ສັດ',
+    food:       'ອາຫານ',
+    drinks:     'ເຄື່ອງດື່ມ',
+    family:     'ຄອບຄົວ',
+    body:       'ຮ່າງກາຍ',
+    clothing:   'ເສື້ອຜ້າ',
+    nature:     'ທຳມະຊາດ',
+    home:       'ເຮືອນ',
+    verbs:      'ຄຳກິລິຍາ',
+    adjectives: 'ຄຳຄຸນນາມ',
+    time:       'ເວລາ',
+    emotions:   'ຄວາມຮູ້ສຶກ',
+  }
+};
+
+function catName(cat) { return (CAT_NAMES[lang] || CAT_NAMES.en)[cat] || cat; }
+
 // ── UI strings (English / Isan) ──
 const UI = {
   en: {
@@ -820,7 +859,7 @@ function renderPicker() {
     btn.className = 'cat-btn' + (selectedCats.has(cat) ? ' selected' : '');
     btn.innerHTML = `
       <div class="cat-emoji">${emoji}</div>
-      <div class="cat-name">${cat}</div>
+      <div class="cat-name">${catName(cat)}</div>
       <div class="cat-count">${done}/${total} ${t('box')} 3+</div>
     `;
     btn.onclick = () => toggleCat(cat, btn);
@@ -961,7 +1000,7 @@ function nextCard() {
   }
 
   document.getElementById('card-front').textContent = front;
-  document.getElementById('card-category').textContent = (CAT_EMOJI[item.cat] || '') + ' ' + item.cat;
+  document.getElementById('card-category').textContent = (CAT_EMOJI[item.cat] || '') + ' ' + catName(item.cat);
   document.getElementById('card-srs-badge').textContent = '◆'.repeat(box);
   document.getElementById('card-hint').textContent = t('tapToReveal');
   document.getElementById('card-hint').style.display = '';
