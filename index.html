@@ -357,7 +357,9 @@
       color: #334155;
     }
 
-    .card-front { font-size: 2rem; font-weight: 700; color: #f8fafc; }
+    .card-front { font-size: 2rem; font-weight: 700; color: #a78bfa; }
+    .card-front.english { color: #f8fafc; }
+    .card-front-roman { font-size: 1rem; color: #818cf8; margin-top: -6px; display: none; }
     .card-hint { font-size: 0.82rem; color: #475569; }
 
     .card-back { display: none; flex-direction: column; align-items: center; gap: 6px; }
@@ -556,6 +558,7 @@
     <div class="card-category" id="card-category"></div>
     <div class="card-srs-badge" id="card-srs-badge"></div>
     <div class="card-front" id="card-front"></div>
+    <div class="card-front-roman" id="card-front-roman"></div>
     <div class="card-hint" id="card-hint">tap to reveal</div>
     <div class="card-back" id="card-back">
       <div class="isan-script" id="isan-script"></div>
@@ -673,6 +676,7 @@ const UI = {
     studyAgain: 'Study again',
     resetProgress: 'reset all progress',
     madeBy: '✦ Made by Ludo',
+    howToUse: 'How to use',
     engToIsan: 'Eng → Isan',
     isanToEng: 'Isan → Eng',
     tapToReveal: 'tap to reveal',
@@ -697,6 +701,7 @@ const UI = {
     studyAgain: 'เฮียนอีก',
     resetProgress: 'ลบความคืบหน้า',
     madeBy: '✦ สร้างโดย Ludo',
+    howToUse: 'ວິທີໃຊ້',
     engToIsan: 'อังกฤษ → อีสาน',
     isanToEng: 'อีสาน → อังกฤษ',
     tapToReveal: 'แตะเพื่อเบิ่ง',
@@ -787,6 +792,7 @@ function applyLang() {
   document.getElementById('done-title').textContent = t('sessionDone');
   document.getElementById('reset-link').textContent = t('resetProgress');
   document.getElementById('made-by').textContent = t('madeBy');
+  document.getElementById('how-to-link').textContent = t('howToUse');
   // answer buttons
   document.querySelector('.btn-again').textContent = t('again');
   document.querySelector('.btn-got-it').textContent = t('gotIt');
@@ -986,20 +992,21 @@ function nextCard() {
   const box = getBox(mode, idx);
   const item = items[idx];
 
-  let front, backScript, backRoman, backEn;
+  const frontEl       = document.getElementById('card-front');
+  const frontRomanEl  = document.getElementById('card-front-roman');
+
   if (direction === 'eng-isan') {
-    front = item.en;
-    backScript = item.script;
-    backRoman  = item.is;
-    backEn = null;
+    frontEl.textContent      = item.en;
+    frontEl.classList.add('english');
+    frontRomanEl.textContent = '';
+    frontRomanEl.style.display = 'none';
   } else {
-    front = item.script + '\n' + item.is;
-    backScript = null;
-    backRoman  = null;
-    backEn = item.en;
+    frontEl.textContent      = item.script;
+    frontEl.classList.remove('english');
+    frontRomanEl.textContent = item.is;
+    frontRomanEl.style.display = 'block';
   }
 
-  document.getElementById('card-front').textContent = front;
   document.getElementById('card-category').textContent = (CAT_EMOJI[item.cat] || '') + ' ' + catName(item.cat);
   document.getElementById('card-srs-badge').textContent = '◆'.repeat(box);
   document.getElementById('card-hint').textContent = t('tapToReveal');
@@ -1012,10 +1019,10 @@ function nextCard() {
   const romanEl  = document.getElementById('isan-roman');
 
   if (direction === 'eng-isan') {
-    scriptEl.textContent = backScript;
-    romanEl.textContent  = backRoman;
+    scriptEl.textContent = item.script;
+    romanEl.textContent  = item.is;
   } else {
-    scriptEl.textContent = backEn;
+    scriptEl.textContent = item.en;
     romanEl.textContent  = '';
   }
 
