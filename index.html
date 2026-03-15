@@ -390,6 +390,8 @@
     .btn:active { transform: scale(0.97); }
     .btn-again { background: #1e293b; color: #f87171; border: 1px solid #374151; }
     .btn-got-it { background: #1e293b; color: #34d399; border: 1px solid #374151; }
+    .btn-skip { background: #1e293b; color: #64748b; border: 1px solid #374151; flex: 1; }
+    .btn-stop { background: #1e293b; color: #64748b; border: 1px solid #374151; flex: 1; }
 
     .btn-reveal {
       background: #6366f1;
@@ -571,9 +573,13 @@
   <div id="word-chips"></div>
   <div id="word-popup"></div>
 
-  <button class="btn-reveal" id="btn-reveal" onclick="revealCard()" data-key="reveal">Reveal</button>
+  <div class="btn-row" id="btn-reveal-row">
+    <button class="btn btn-skip" id="btn-skip" onclick="skipCard()" data-key="skip">↩ Skip</button>
+    <button class="btn-reveal" id="btn-reveal" onclick="revealCard()" data-key="reveal" style="margin-top:0;flex:2">Reveal</button>
+  </div>
 
   <div class="btn-row" id="btn-row" style="display:none">
+    <button class="btn btn-stop" onclick="showPicker()" data-key="stop">■ Stop</button>
     <button class="btn btn-again" onclick="answer(false)" data-key="again">✗ Again</button>
     <button class="btn btn-got-it" onclick="answer(true)" data-key="gotIt">✓ Got it</button>
   </div>
@@ -677,6 +683,8 @@ const UI = {
     resetProgress: 'reset all progress',
     madeBy: '✦ Made by Ludo',
     howToUse: 'How to use',
+    skip: '↩ Skip',
+    stop: '■ Stop',
     engToIsan: 'Eng → Isan',
     isanToEng: 'Isan → Eng',
     tapToReveal: 'tap to reveal',
@@ -702,6 +710,8 @@ const UI = {
     resetProgress: 'ลบความคืบหน้า',
     madeBy: '✦ สร้างโดย Ludo',
     howToUse: 'ວິທີໃຊ້',
+    skip: '↩ ຂ້າມ',
+    stop: '■ ຢຸດ',
     engToIsan: 'อังกฤษ → อีสาน',
     isanToEng: 'อีสาน → อังกฤษ',
     tapToReveal: 'แตะเพื่อเบิ่ง',
@@ -796,6 +806,8 @@ function applyLang() {
   // answer buttons
   document.querySelector('.btn-again').textContent = t('again');
   document.querySelector('.btn-got-it').textContent = t('gotIt');
+  document.getElementById('btn-skip').textContent = t('skip');
+  document.querySelector('.btn-stop').textContent = t('stop');
   // update stats labels
   updateStatLabels();
   // re-render picker to update counts label
@@ -1013,7 +1025,7 @@ function nextCard() {
   document.getElementById('card-hint').style.display = '';
   document.getElementById('card-back').classList.remove('visible');
   document.getElementById('btn-row').style.display = 'none';
-  document.getElementById('btn-reveal').style.display = '';
+  document.getElementById('btn-reveal-row').style.display = 'flex';
 
   const scriptEl = document.getElementById('isan-script');
   const romanEl  = document.getElementById('isan-roman');
@@ -1090,12 +1102,17 @@ function lookupWord(token, chipEl) {
   }
 }
 
+function skipCard() {
+  queue.push(current.idx); // put at end of queue, no SRS change
+  nextCard();
+}
+
 function revealCard() {
   if (revealed) return;
   revealed = true;
   document.getElementById('card-back').classList.add('visible');
   document.getElementById('card-hint').style.display = 'none';
-  document.getElementById('btn-reveal').style.display = 'none';
+  document.getElementById('btn-reveal-row').style.display = 'none';
   document.getElementById('btn-row').style.display = 'flex';
 }
 
