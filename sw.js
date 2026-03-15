@@ -6,7 +6,8 @@ const ASSETS = [
   '/isan-flashcards/sentences.js',
   '/isan-flashcards/manifest.json',
   '/isan-flashcards/icon-192.png',
-  '/isan-flashcards/icon-512.png'
+  '/isan-flashcards/icon-512.png',
+  '/isan-flashcards/how-to-use.html'
 ];
 
 self.addEventListener('install', e => {
