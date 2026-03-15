@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Isan Flashcards</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <script src="words.js"></script>
+  <script src="sentences.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0f172a;
+      color: #f1f5f9;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      color: #94a3b8;
+      margin-bottom: 20px;
+    }
+
+    .mode-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      background: #1e293b;
+      padding: 4px;
+      border-radius: 12px;
+    }
+
+    .mode-tab {
+      padding: 9px 28px;
+      border-radius: 9px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      background: transparent;
+      color: #475569;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .mode-tab.active {
+      background: #6366f1;
+      color: white;
+    }
+
+    /* Direction toggle */
+    .direction-row {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .dir-btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: 1.5px solid #334155;
+      background: #1e293b;
+      color: #475569;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
+
+    .dir-btn.active {
+      border-color: #6366f1;
+      background: #1e1b4b;
+      color: #a5b4fc;
+    }
+
+    /* Interface language toggle */
+    .lang-toggle {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin-bottom: 16px;
+      font-size: 0.78rem;
+      color: #475569;
+    }
+
+    .lang-btn {
+      padding: 4px 12px;
+      border-radius: 99px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border: 1.5px solid #334155;
+      background: transparent;
+      color: #475569;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
+
+    .lang-btn.active {
+      border-color: #6366f1;
+      background: #1e1b4b;
+      color: #a5b4fc;
+    }
+
+    /* Quit button */
+    .quit-btn {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: none;
+      border: none;
+      color: #334155;
+      font-size: 1.3rem;
+      cursor: pointer;
+      padding: 4px 8px;
+      line-height: 1;
+    }
+
+    .quit-btn:hover { color: #64748b; }
+
+    .study-header {
+      width: 100%;
+      max-width: 480px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 4px;
+    }
+
+    .study-header-mode {
+      font-size: 0.78rem;
+      color: #334155;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* Word chips */
+    #word-chips {
+      display: none;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+      width: 100%;
+      max-width: 480px;
+      margin-top: 14px;
+    }
+
+    #word-chips.visible { display: flex; }
+
+    .chip {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 99px;
+      padding: 5px 12px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .chip:hover { border-color: #6366f1; color: #c4b5fd; }
+    .chip.hit { border-color: #34d399; color: #34d399; }
+
+    /* Word popup */
+    #word-popup {
+      display: none;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 0.85rem;
+      color: #94a3b8;
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+      margin-top: 6px;
+    }
+
+    #word-popup.visible { display: block; }
+    #word-popup .pop-script { font-size: 1.2rem; font-weight: 700; color: #a78bfa; }
+    #word-popup .pop-is { font-size: 0.9rem; color: #818cf8; margin-top: 2px; }
+    #word-popup .pop-en { color: #64748b; margin-top: 2px; }
+
+    #picker-view {
+      width: 100%;
+      max-width: 520px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .progress-wrap {
+      width: 100%;
+      max-width: 520px;
+      margin-bottom: 4px;
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      color: #64748b;
+      margin-bottom: 6px;
+    }
+
+    .progress-bar {
+      height: 5px;
+      background: #1e293b;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6366f1, #8b5cf6);
+      border-radius: 99px;
+      transition: width 0.4s ease;
+    }
+
+    .picker-label {
+      font-size: 0.78rem;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      align-self: flex-start;
+    }
+
+    .cat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .cat-btn {
+      background: #1e293b;
+      border: 1.5px solid #334155;
+      border-radius: 10px;
+      padding: 12px 14px;
+      cursor: pointer;
+      text-align: left;
+      transition: border-color 0.15s, background 0.15s;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .cat-btn:hover { border-color: #6366f1; }
+    .cat-btn.selected { border-color: #6366f1; background: #1e1b4b; }
+
+    .cat-emoji { font-size: 1.2rem; margin-bottom: 2px; }
+    .cat-name { font-size: 0.85rem; font-weight: 600; color: #e2e8f0; }
+    .cat-count { font-size: 0.72rem; color: #475569; }
+    .cat-btn.selected .cat-count { color: #818cf8; }
+
+    /* SRS box indicator */
+    .cat-srs {
+      font-size: 0.65rem;
+      color: #334155;
+      margin-top: 1px;
+    }
+
+    .picker-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
+    .select-all {
+      font-size: 0.78rem;
+      color: #475569;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .select-all:hover { color: #94a3b8; }
+
+    .word-count-note {
+      font-size: 0.78rem;
+      color: #334155;
+    }
+
+    .btn-start {
+      width: 100%;
+      padding: 15px;
+      background: #6366f1;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-start:disabled { opacity: 0.35; cursor: default; }
+
+    /* Study */
+    #study-view {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 480px;
+      background: #1e293b;
+      border-radius: 20px;
+      padding: 48px 32px;
+      text-align: center;
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      cursor: pointer;
+      border: 1px solid #334155;
+      transition: border-color 0.2s;
+      position: relative;
+    }
+
+    .card:hover { border-color: #6366f1; }
+
+    .card-category {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #475569;
+      position: absolute;
+      top: 18px;
+      left: 0; right: 0;
+    }
+
+    /* SRS box badge */
+    .card-srs-badge {
+      position: absolute;
+      top: 14px;
+      right: 16px;
+      font-size: 0.65rem;
+      color: #334155;
+    }
+
+    .card-front { font-size: 2rem; font-weight: 700; color: #f8fafc; }
+    .card-hint { font-size: 0.82rem; color: #475569; }
+
+    .card-back { display: none; flex-direction: column; align-items: center; gap: 6px; }
+    .card-back.visible { display: flex; }
+
+    .isan-script { font-size: 1.9rem; font-weight: 700; color: #a78bfa; }
+    .isan-roman { font-size: 1rem; color: #818cf8; }
+
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 13px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    .btn:active { transform: scale(0.97); }
+    .btn-again { background: #1e293b; color: #f87171; border: 1px solid #374151; }
+    .btn-got-it { background: #1e293b; color: #34d399; border: 1px solid #374151; }
+
+    .btn-reveal {
+      background: #6366f1;
+      color: white;
+      width: 100%;
+      max-width: 480px;
+      margin-top: 16px;
+      padding: 13px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+    }
+
+    .stats {
+      display: flex;
+      gap: 24px;
+      margin-top: 28px;
+      font-size: 0.78rem;
+      color: #475569;
+    }
+
+    .stats span { color: #94a3b8; font-weight: 600; }
+
+    /* SRS progress dots */
+    .srs-dots {
+      display: flex;
+      gap: 4px;
+      margin-top: 12px;
+    }
+
+    .srs-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #1e293b;
+      border: 1px solid #334155;
+    }
+
+    .srs-dot.filled { background: #6366f1; border-color: #6366f1; }
+
+    .back-link {
+      margin-top: 20px;
+      font-size: 0.75rem;
+      color: #334155;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .back-link:hover { color: #64748b; }
+
+    /* Done */
+    #session-done {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      text-align: center;
+    }
+
+    #session-done.visible { display: flex; }
+    #session-done h2 { font-size: 1.7rem; }
+    #session-done p { color: #64748b; max-width: 360px; }
+
+    .btn-done-row { display: flex; gap: 12px; margin-top: 8px; }
+
+    .btn-secondary {
+      padding: 13px 24px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border: 1px solid #334155;
+      background: #1e293b;
+      color: #94a3b8;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      padding: 13px 24px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border: none;
+      background: #6366f1;
+      color: white;
+      cursor: pointer;
+    }
+
+    .reset-link {
+      margin-top: 20px;
+      font-size: 0.72rem;
+      color: #1e293b;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .reset-link:hover { color: #334155; }
+
+    .made-by {
+      margin-top: 28px;
+      font-size: 0.7rem;
+      color: #1e293b;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🌶️ Isan Flashcards</h1>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" id="lang-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="lang-is" onclick="setLang('is')">ອີສານ</button>
+</div>
+
+<div class="mode-tabs">
+  <button class="mode-tab active" id="tab-words" onclick="setMode('words')" data-key="words">Words</button>
+  <button class="mode-tab" id="tab-sentences" onclick="setMode('sentences')" data-key="sentences">Sentences</button>
+</div>
+
+<div id="picker-view">
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span id="progress-label-picker">Words learned</span>
+      <span id="progress-text">0 / 0</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="direction-row">
+    <button class="dir-btn active" id="dir-eng-isan" onclick="setDirection('eng-isan')" data-key="engToIsan">Eng → Isan</button>
+    <button class="dir-btn" id="dir-isan-eng" onclick="setDirection('isan-eng')" data-key="isanToEng">Isan → Eng</button>
+  </div>
+
+  <div class="picker-label" id="picker-label">Choose categories to study</div>
+  <div class="cat-grid" id="cat-grid"></div>
+
+  <div class="picker-row">
+    <div class="word-count-note" id="word-count-note"></div>
+    <div class="select-all" id="select-all-btn" onclick="toggleAll()">select all</div>
+  </div>
+
+  <button class="btn-start" id="btn-start" onclick="startSession()" disabled data-key="startStudying">Start studying</button>
+</div>
+
+<div id="study-view" style="display:none">
+  <div class="study-header">
+    <span class="study-header-mode" id="study-header-mode"></span>
+    <button class="quit-btn" onclick="showPicker()" title="Quit">✕</button>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span id="progress-label-study">Words learned</span>
+      <span id="progress-text2">0 / 0</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress-fill2" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="card" id="card" onclick="revealCard()">
+    <div class="card-category" id="card-category"></div>
+    <div class="card-srs-badge" id="card-srs-badge"></div>
+    <div class="card-front" id="card-front"></div>
+    <div class="card-hint" id="card-hint">tap to reveal</div>
+    <div class="card-back" id="card-back">
+      <div class="isan-script" id="isan-script"></div>
+      <div class="isan-roman" id="isan-roman"></div>
+    </div>
+  </div>
+
+  <div class="srs-dots" id="srs-dots"></div>
+
+  <div id="word-chips"></div>
+  <div id="word-popup"></div>
+
+  <button class="btn-reveal" id="btn-reveal" onclick="revealCard()" data-key="reveal">Reveal</button>
+
+  <div class="btn-row" id="btn-row" style="display:none">
+    <button class="btn btn-again" onclick="answer(false)" data-key="again">✗ Again</button>
+    <button class="btn btn-got-it" onclick="answer(true)" data-key="gotIt">✓ Got it</button>
+  </div>
+
+  <div class="stats">
+    <div data-key="session">Session: <span id="stat-session">0</span></div>
+    <div data-key="correct">Correct: <span id="stat-correct">0</span></div>
+    <div data-key="remaining">Remaining: <span id="stat-deck">0</span></div>
+  </div>
+</div>
+
+<div id="session-done">
+  <div style="font-size:2.5rem">🎉</div>
+  <h2 id="done-title">Session done!</h2>
+  <p id="done-msg"></p>
+  <div class="btn-done-row">
+    <button class="btn-secondary" onclick="showPicker()" data-key="changeCategories">Change categories</button>
+    <button class="btn-primary" onclick="startSession()" data-key="studyAgain">Study again</button>
+  </div>
+</div>
+
+<div class="reset-link" id="reset-link" onclick="resetProgress()">reset all progress</div>
+
+<div class="made-by" id="made-by">✦ Made by Ludo</div>
+
+<script>
+// ── Category emojis ──
+const CAT_EMOJI = {
+  greetings:  '🙏',
+  numbers:    '🔢',
+  colors:     '🎨',
+  animals:    '🐘',
+  food:       '🍜',
+  drinks:     '🥤',
+  family:     '👨‍👩‍👧',
+  body:       '💪',
+  clothing:   '👕',
+  nature:     '🌿',
+  home:       '🏠',
+  verbs:      '🏃',
+  adjectives: '⭐',
+  time:       '⏰',
+  emotions:   '😊',
+};
+
+// ── UI strings (English / Isan) ──
+const UI = {
+  en: {
+    words: 'Words',
+    sentences: 'Sentences',
+    startStudying: 'Start studying',
+    gotIt: '✓ Got it',
+    again: '✗ Again',
+    reveal: 'Reveal',
+    chooseCategories: 'Choose categories to study',
+    selectAll: 'select all',
+    sessionDone: 'Session done!',
+    changeCategories: 'Change categories',
+    studyAgain: 'Study again',
+    resetProgress: 'reset all progress',
+    madeBy: '✦ Made by Ludo',
+    engToIsan: 'Eng → Isan',
+    isanToEng: 'Isan → Eng',
+    tapToReveal: 'tap to reveal',
+    session: 'Session',
+    correct: 'Correct',
+    remaining: 'Remaining',
+    wordsLearned: 'Words learned',
+    sentencesLearned: 'Sentences learned',
+    box: 'Box',
+  },
+  is: {
+    words: 'คำ',
+    sentences: 'ประโยค',
+    startStudying: 'เริ่มเฮียน',
+    gotIt: '✓ เข้าใจ',
+    again: '✗ อีกเทื่อ',
+    reveal: 'เบิ่ง',
+    chooseCategories: 'เลือกหมวดที่สิเฮียน',
+    selectAll: 'เลือกทั้งหมด',
+    sessionDone: 'เฮียนเสร็จแล้ว! 🎉',
+    changeCategories: 'เปลี่ยนหมวด',
+    studyAgain: 'เฮียนอีก',
+    resetProgress: 'ลบความคืบหน้า',
+    madeBy: '✦ สร้างโดย Ludo',
+    engToIsan: 'อังกฤษ → อีสาน',
+    isanToEng: 'อีสาน → อังกฤษ',
+    tapToReveal: 'แตะเพื่อเบิ่ง',
+    session: 'รอบนี้',
+    correct: 'ถูก',
+    remaining: 'เหลือ',
+    wordsLearned: 'คำที่เฮียนแล้ว',
+    sentencesLearned: 'ประโยคที่เฮียนแล้ว',
+    box: 'กล่อง',
+  }
+};
+
+// ── SRS: box intervals (sessions between reviews) ──
+const SRS_INTERVALS = [0, 1, 2, 4, 8, 16]; // box 0-5
+
+// ── State ──
+const CATEGORIES  = [...new Set(WORDS.map(w => w.cat))];
+const WORD_TARGET = WORDS.length;
+const SENT_TARGET = SENTENCES.length;
+
+let mode      = 'words';
+let direction = localStorage.getItem('isan_direction') || 'eng-isan';
+let lang      = localStorage.getItem('isan_lang') || 'en';
+let selectedCats = new Set();
+
+// SRS data: { "w_0": {box:1, lastSession:0}, "s_0": {box:1, lastSession:0}, ... }
+let srsData = JSON.parse(localStorage.getItem('isan_srs') || '{}');
+let sessionCount = parseInt(localStorage.getItem('isan_session_count') || '0');
+
+let queue = [];
+let current = null;
+let sessionCorrect = 0;
+let sessionTotal = 0;
+let revealed = false;
+
+// ── SRS helpers ──
+function cardKey(m, idx) { return m[0] + '_' + idx; }
+
+function getBox(m, idx) {
+  const k = cardKey(m, idx);
+  return srsData[k] ? srsData[k].box : 0;
+}
+
+function getLastSession(m, idx) {
+  const k = cardKey(m, idx);
+  return srsData[k] ? srsData[k].lastSession : -999;
+}
+
+function isDue(m, idx) {
+  const box = getBox(m, idx);
+  if (box === 0) return true; // never seen
+  const interval = SRS_INTERVALS[Math.min(box, 5)];
+  return (sessionCount - getLastSession(m, idx)) >= interval;
+}
+
+function promoteCard(m, idx, correct) {
+  const k = cardKey(m, idx);
+  const cur = srsData[k] || { box: 0, lastSession: 0 };
+  srsData[k] = {
+    box: correct ? Math.min(cur.box + 1, 5) : Math.max(cur.box - 1, 0),
+    lastSession: sessionCount
+  };
+  localStorage.setItem('isan_srs', JSON.stringify(srsData));
+}
+
+function masteredCount(m) {
+  const items = m === 'words' ? WORDS : SENTENCES;
+  return items.filter((_, i) => getBox(m, i) >= 3).length;
+}
+
+// ── Language UI ──
+function t(key) { return UI[lang][key] || UI.en[key] || key; }
+
+function applyLang() {
+  // tabs
+  document.getElementById('tab-words').textContent = t('words');
+  document.getElementById('tab-sentences').textContent = t('sentences');
+  // direction buttons
+  document.getElementById('dir-eng-isan').textContent = t('engToIsan');
+  document.getElementById('dir-isan-eng').textContent = t('isanToEng');
+  // picker
+  document.getElementById('picker-label').textContent = t('chooseCategories');
+  document.getElementById('select-all-btn').textContent = t('selectAll');
+  document.getElementById('btn-start').textContent = t('startStudying');
+  // study
+  document.getElementById('btn-reveal').textContent = t('reveal');
+  // done
+  document.getElementById('done-title').textContent = t('sessionDone');
+  document.getElementById('reset-link').textContent = t('resetProgress');
+  document.getElementById('made-by').textContent = t('madeBy');
+  // answer buttons
+  document.querySelector('.btn-again').textContent = t('again');
+  document.querySelector('.btn-got-it').textContent = t('gotIt');
+  // update stats labels
+  updateStatLabels();
+  // re-render picker to update counts label
+  renderPicker();
+}
+
+function setLang(l) {
+  lang = l;
+  localStorage.setItem('isan_lang', l);
+  document.getElementById('lang-en').classList.toggle('active', l === 'en');
+  document.getElementById('lang-is').classList.toggle('active', l === 'is');
+  applyLang();
+}
+
+function updateStatLabels() {
+  const statEls = document.querySelectorAll('.stats > div');
+  if (statEls[0]) statEls[0].innerHTML = t('session') + ': <span id="stat-session">' + sessionTotal + '</span>';
+  if (statEls[1]) statEls[1].innerHTML = t('correct') + ': <span id="stat-correct">' + sessionCorrect + '</span>';
+  if (statEls[2]) statEls[2].innerHTML = t('remaining') + ': <span id="stat-deck">' + queue.length + '</span>';
+}
+
+// ── Mode & Direction ──
+function setMode(m) {
+  mode = m;
+  selectedCats.clear();
+  document.getElementById('tab-words').classList.toggle('active', m === 'words');
+  document.getElementById('tab-sentences').classList.toggle('active', m === 'sentences');
+  showPicker();
+}
+
+function setDirection(d) {
+  direction = d;
+  localStorage.setItem('isan_direction', d);
+  document.getElementById('dir-eng-isan').classList.toggle('active', d === 'eng-isan');
+  document.getElementById('dir-isan-eng').classList.toggle('active', d === 'isan-eng');
+}
+
+function applyDirectionUI() {
+  document.getElementById('dir-eng-isan').classList.toggle('active', direction === 'eng-isan');
+  document.getElementById('dir-isan-eng').classList.toggle('active', direction === 'isan-eng');
+}
+
+// ── Picker ──
+function catItemCount(cat) {
+  const items = mode === 'words' ? WORDS : SENTENCES;
+  return items.filter(w => w.cat === cat).length;
+}
+
+function catMasteredCount(cat) {
+  const items = mode === 'words' ? WORDS : SENTENCES;
+  return items.filter((w, i) => w.cat === cat && getBox(mode, i) >= 3).length;
+}
+
+function renderPicker() {
+  const items = mode === 'words' ? WORDS : SENTENCES;
+  const label = mode === 'words' ? t('wordsLearned') : t('sentencesLearned');
+  document.getElementById('progress-label-picker').textContent = label;
+
+  const grid = document.getElementById('cat-grid');
+  grid.innerHTML = '';
+  CATEGORIES.forEach(cat => {
+    const total = catItemCount(cat);
+    if (total === 0) return;
+    const done = catMasteredCount(cat);
+    const emoji = CAT_EMOJI[cat] || '📚';
+    const btn = document.createElement('button');
+    btn.className = 'cat-btn' + (selectedCats.has(cat) ? ' selected' : '');
+    btn.innerHTML = `
+      <div class="cat-emoji">${emoji}</div>
+      <div class="cat-name">${cat}</div>
+      <div class="cat-count">${done}/${total} ${t('box')} 3+</div>
+    `;
+    btn.onclick = () => toggleCat(cat, btn);
+    grid.appendChild(btn);
+  });
+  updateWordCountNote();
+  updateStartBtn();
+}
+
+function toggleCat(cat, btn) {
+  selectedCats.has(cat) ? selectedCats.delete(cat) : selectedCats.add(cat);
+  btn.classList.toggle('selected');
+  updateWordCountNote();
+  updateStartBtn();
+}
+
+function toggleAll() {
+  const available = CATEGORIES.filter(c => catItemCount(c) > 0);
+  const allSelected = available.every(c => selectedCats.has(c));
+  allSelected ? selectedCats.clear() : available.forEach(c => selectedCats.add(c));
+  renderPicker();
+}
+
+function updateWordCountNote() {
+  const items = mode === 'words' ? WORDS : SENTENCES;
+  const count = items.filter(w => selectedCats.has(w.cat)).length;
+  document.getElementById('word-count-note').textContent =
+    selectedCats.size > 0 ? `${count} ${mode === 'words' ? t('words') : t('sentences')}` : '';
+}
+
+function updateStartBtn() {
+  document.getElementById('btn-start').disabled = selectedCats.size === 0;
+}
+
+function showPicker() {
+  document.getElementById('session-done').classList.remove('visible');
+  document.getElementById('study-view').style.display = 'none';
+  document.getElementById('picker-view').style.display = 'flex';
+  applyDirectionUI();
+  renderPicker();
+  updateProgress();
+}
+
+// ── Progress ──
+function updateProgress() {
+  const items = mode === 'words' ? WORDS : SENTENCES;
+  const target = items.length;
+  const count = masteredCount(mode);
+  const pct = target > 0 ? Math.min(100, (count / target) * 100) : 0;
+  const label = mode === 'words' ? t('wordsLearned') : t('sentencesLearned');
+  ['', '2'].forEach(s => {
+    const txt = document.getElementById('progress-text' + s);
+    const fill = document.getElementById('progress-fill' + s);
+    if (txt) txt.textContent = `${count} / ${target}`;
+    if (fill) fill.style.width = pct + '%';
+  });
+  const lp = document.getElementById('progress-label-study');
+  if (lp) lp.textContent = label;
+}
+
+// ── Study ──
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function buildQueue() {
+  const items = mode === 'words' ? WORDS : SENTENCES;
+  // Include cards that are due or not yet seen, filtered by selected categories
+  const indices = items
+    .map((w, i) => ({ w, i }))
+    .filter(({ w }) => selectedCats.has(w.cat))
+    .filter(({ i }) => isDue(mode, i))
+    .map(({ i }) => i);
+
+  // If nothing due, show all selected cards anyway
+  if (indices.length === 0) {
+    queue = shuffle(
+      items.map((w, i) => ({ w, i }))
+        .filter(({ w }) => selectedCats.has(w.cat))
+        .map(({ i }) => i)
+    );
+  } else {
+    queue = shuffle(indices);
+  }
+}
+
+function startSession() {
+  sessionCount++;
+  localStorage.setItem('isan_session_count', sessionCount);
+  sessionCorrect = 0;
+  sessionTotal = 0;
+  buildQueue();
+  document.getElementById('session-done').classList.remove('visible');
+  document.getElementById('picker-view').style.display = 'none';
+  document.getElementById('study-view').style.display = 'flex';
+  const modeLabel = mode === 'words' ? t('words') : t('sentences');
+  const dirLabel = direction === 'eng-isan' ? t('engToIsan') : t('isanToEng');
+  document.getElementById('study-header-mode').textContent = `${modeLabel} · ${dirLabel}`;
+  updateProgress();
+  nextCard();
+}
+
+function renderSrsDots(box) {
+  const el = document.getElementById('srs-dots');
+  el.innerHTML = '';
+  for (let i = 0; i < 5; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'srs-dot' + (i < box ? ' filled' : '');
+    el.appendChild(dot);
+  }
+}
+
+function nextCard() {
+  if (queue.length === 0) { showDone(); return; }
+  const items = mode === 'words' ? WORDS : SENTENCES;
+  const idx = queue.shift();
+  current = { item: items[idx], idx };
+  revealed = false;
+
+  const box = getBox(mode, idx);
+  const item = items[idx];
+
+  let front, backScript, backRoman, backEn;
+  if (direction === 'eng-isan') {
+    front = item.en;
+    backScript = item.script;
+    backRoman  = item.is;
+    backEn = null;
+  } else {
+    front = item.script + '\n' + item.is;
+    backScript = null;
+    backRoman  = null;
+    backEn = item.en;
+  }
+
+  document.getElementById('card-front').textContent = front;
+  document.getElementById('card-category').textContent = (CAT_EMOJI[item.cat] || '') + ' ' + item.cat;
+  document.getElementById('card-srs-badge').textContent = '◆'.repeat(box);
+  document.getElementById('card-hint').textContent = t('tapToReveal');
+  document.getElementById('card-hint').style.display = '';
+  document.getElementById('card-back').classList.remove('visible');
+  document.getElementById('btn-row').style.display = 'none';
+  document.getElementById('btn-reveal').style.display = '';
+
+  const scriptEl = document.getElementById('isan-script');
+  const romanEl  = document.getElementById('isan-roman');
+
+  if (direction === 'eng-isan') {
+    scriptEl.textContent = backScript;
+    romanEl.textContent  = backRoman;
+  } else {
+    scriptEl.textContent = backEn;
+    romanEl.textContent  = '';
+  }
+
+  renderSrsDots(box);
+
+  // Word chips for sentences mode
+  const chipsEl = document.getElementById('word-chips');
+  const popupEl = document.getElementById('word-popup');
+  popupEl.classList.remove('visible');
+  popupEl.innerHTML = '';
+
+  if (mode === 'sentences') {
+    const textToTokenize = direction === 'eng-isan' ? item.en : item.is;
+    const tokens = textToTokenize.replace(/[?!.,]/g, '').split(/\s+/).filter(Boolean);
+    chipsEl.innerHTML = '';
+    tokens.forEach(token => {
+      const chip = document.createElement('button');
+      chip.className = 'chip';
+      chip.textContent = token;
+      chip.onclick = (e) => { e.stopPropagation(); lookupWord(token, chip); };
+      chipsEl.appendChild(chip);
+    });
+    chipsEl.classList.add('visible');
+  } else {
+    chipsEl.innerHTML = '';
+    chipsEl.classList.remove('visible');
+  }
+
+  updateStats();
+}
+
+function lookupWord(token, chipEl) {
+  const popupEl = document.getElementById('word-popup');
+  const t_lower = token.toLowerCase();
+
+  let match = null;
+  if (direction === 'eng-isan') {
+    match = WORDS.find(w => w.en.toLowerCase().split(/[\s/,()]+/).includes(t_lower))
+         || WORDS.find(w => w.en.toLowerCase().includes(t_lower) && t_lower.length > 2);
+  } else {
+    match = WORDS.find(w => w.is.toLowerCase().split(/[\s/,().-]+/).includes(t_lower))
+         || WORDS.find(w => w.is.toLowerCase().includes(t_lower) && t_lower.length > 2);
+  }
+
+  if (chipEl.classList.contains('hit')) {
+    chipEl.classList.remove('hit');
+    popupEl.classList.remove('visible');
+    popupEl.innerHTML = '';
+    return;
+  }
+
+  document.querySelectorAll('.chip.hit').forEach(c => c.classList.remove('hit'));
+
+  if (match) {
+    chipEl.classList.add('hit');
+    popupEl.innerHTML = `
+      <div class="pop-script">${match.script}</div>
+      <div class="pop-is">${match.is}</div>
+      <div class="pop-en">${match.en}</div>
+    `;
+    popupEl.classList.add('visible');
+  } else {
+    popupEl.innerHTML = `<div class="pop-en" style="color:#475569">no match for "${token}"</div>`;
+    popupEl.classList.add('visible');
+  }
+}
+
+function revealCard() {
+  if (revealed) return;
+  revealed = true;
+  document.getElementById('card-back').classList.add('visible');
+  document.getElementById('card-hint').style.display = 'none';
+  document.getElementById('btn-reveal').style.display = 'none';
+  document.getElementById('btn-row').style.display = 'flex';
+}
+
+function answer(correct) {
+  sessionTotal++;
+  if (correct) {
+    sessionCorrect++;
+    promoteCard(mode, current.idx, true);
+    // If box still < 2, push back for review later this session
+    if (getBox(mode, current.idx) < 2) {
+      const insertAt = Math.min(queue.length, 3 + Math.floor(Math.random() * 3));
+      queue.splice(insertAt, 0, current.idx);
+    }
+  } else {
+    promoteCard(mode, current.idx, false);
+    // Always push back for review this session
+    const insertAt = Math.min(queue.length, 2 + Math.floor(Math.random() * 2));
+    queue.splice(insertAt, 0, current.idx);
+  }
+  updateProgress();
+  nextCard();
+}
+
+function updateStats() {
+  document.getElementById('stat-session').textContent = sessionTotal;
+  document.getElementById('stat-correct').textContent = sessionCorrect;
+  document.getElementById('stat-deck').textContent = queue.length;
+}
+
+function showDone() {
+  document.getElementById('study-view').style.display = 'none';
+  document.getElementById('session-done').classList.add('visible');
+  document.getElementById('done-title').textContent = t('sessionDone');
+  const count = masteredCount(mode);
+  const total = mode === 'words' ? WORDS.length : SENTENCES.length;
+  document.getElementById('done-msg').textContent =
+    `${sessionCorrect} / ${sessionTotal} correct · ${count} / ${total} at box 3+`;
+}
+
+function resetProgress() {
+  if (confirm('Reset all SRS progress for this mode?')) {
+    const items = mode === 'words' ? WORDS : SENTENCES;
+    items.forEach((_, i) => {
+      const k = cardKey(mode, i);
+      delete srsData[k];
+    });
+    localStorage.setItem('isan_srs', JSON.stringify(srsData));
+    updateProgress();
+    showPicker();
+  }
+}
+
+// ── Init ──
+applyLang();
+setLang(lang);
+applyDirectionUI();
+showPicker();
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/isan-flashcards/sw.js');
+}
+</script>
+</body>
+</html>
